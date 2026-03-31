@@ -20,7 +20,7 @@ public class EmailController {
 
     @PostMapping("/send")
     public ResponseEntity<Map<String, String>> sendEmail(@Valid @RequestBody EmailRequest request) {
-        String messageId = emailService.sendEmail(request);
+        String messageId = emailService.sendEmail(request).join();
         resendService.sendEmail();
         return ResponseEntity.ok(Map.of(
                 "status", "success",

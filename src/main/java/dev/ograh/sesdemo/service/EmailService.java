@@ -4,11 +4,13 @@ import dev.ograh.sesdemo.dto.EmailRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.ses.SesClient;
 import software.amazon.awssdk.services.ses.model.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -20,7 +22,8 @@ public class EmailService {
     @Value("${aws.ses.from-email}")
     private String fromEmail;
 
-    public String sendEmail(EmailRequest request) {
+    @Async
+    public CompletableFuture<String> sendEmail(EmailRequest request) {
         try {
             Destination.Builder destinationBuilder = Destination.builder()
                     .toAddresses(request.getTo());
@@ -64,7 +67,7 @@ public class EmailService {
             SendEmailResponse response = sesClient.sendEmail(emailRequest);
 
             log.info("Email sent successfully. MessageId: {}", response.messageId());
-            return response.messageId();
+            return CompletableFuture.completedFuture(response.messageId());
 
         } catch (SesException e) {
             log.error("Failed to send email via SES: {}", e.awsErrorDetails().errorMessage());
